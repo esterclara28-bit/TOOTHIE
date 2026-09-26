@@ -1,0 +1,6 @@
+{
+  "name": "Toothie - Media Edukasi Kesehatan Gigi dan Mulut Anak",
+  "description": "Aplikasi edukasi kesehatan gigi dan mulut interaktif untuk anak usia 6-12 tahun. Belajar, bermain, dan tersenyum sehat bersama Toothie!",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
