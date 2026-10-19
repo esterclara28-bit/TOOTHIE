@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PLAK_STAGES } from '../../data/dentalData';
-import { PlakStage } from '../../types';
+import { PlakStage, NavSection } from '../../types';
 import { ToothieMascot } from '../mascot/ToothieMascot';
 import { GermCharacter } from '../mascot/GermCharacter';
 import { Sparkles, Shield, ChevronRight, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
@@ -8,9 +8,15 @@ import { playPop, playSparkle, speakText } from '../../utils/soundEffects';
 
 interface PlakKarangProps {
   onUnlockBadge?: (badgeId: string) => void;
+  onCompleteModule?: (moduleId: string) => void;
+  onNavigate?: (section: NavSection) => void;
 }
 
-export const PlakKarangSection: React.FC<PlakKarangProps> = ({ onUnlockBadge }) => {
+export const PlakKarangSection: React.FC<PlakKarangProps> = ({
+  onUnlockBadge,
+  onCompleteModule,
+  onNavigate,
+}) => {
   const [currentStageIdx, setCurrentStageIdx] = useState(0);
   const currentStage: PlakStage = PLAK_STAGES[currentStageIdx];
 
@@ -260,6 +266,33 @@ export const PlakKarangSection: React.FC<PlakKarangProps> = ({ onUnlockBadge }) 
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Module Completion & Next Step Card */}
+      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-3xl p-6 sm:p-8 border-2 border-purple-200 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+        <div className="space-y-1 text-center sm:text-left">
+          <span className="text-xs font-black text-purple-700 uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            Langkah 4: Plak & Karang Gigi
+          </span>
+          <h4 className="text-lg font-black text-slate-800">
+            Hebat! Kamu telah memahami bahaya plak & karang gigi!
+          </h4>
+          <p className="text-xs font-bold text-slate-600">
+            Menyelesaikan materi ini juga sekaligus <strong>membuka akses Kuis Petualangan Gigi 🎮</strong>!
+          </p>
+        </div>
+
+        <button
+          onClick={() => {
+            if (onCompleteModule) onCompleteModule('plak-karang');
+            if (onNavigate) onNavigate('gigi-berlubang');
+          }}
+          className="btn-3d-rose px-6 py-3.5 rounded-2xl text-white font-black text-sm flex items-center gap-2 whitespace-nowrap shadow-md"
+        >
+          <span>Tandai Selesai & Lanjut Materi 5 🛡️</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );

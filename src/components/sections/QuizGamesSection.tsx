@@ -1,18 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { QUIZ_QUESTIONS } from '../../data/dentalData';
-import { QuizQuestion } from '../../types';
+import { QuizQuestion, NavSection } from '../../types';
 import { ToothieMascot } from '../mascot/ToothieMascot';
 import { GermCharacter } from '../mascot/GermCharacter';
-import { Sparkles, Award, Star, ArrowRight, RotateCcw, CheckCircle2, XCircle, Heart, Play, Trophy } from 'lucide-react';
+import { Sparkles, Award, Star, ArrowRight, RotateCcw, CheckCircle2, XCircle, Heart, Play, Trophy, Lock, BookOpen } from 'lucide-react';
 import { playPop, playSuccess, playBoing, playFanfare, playBrushSound, speakText } from '../../utils/soundEffects';
 import confetti from 'canvas-confetti';
 
 interface QuizGamesProps {
   onUnlockBadge?: (badgeId: string) => void;
   onRecordScore?: (score: number) => void;
+  onNavigate?: (section: NavSection) => void;
+  isLocked?: boolean;
 }
 
-export const QuizGamesSection: React.FC<QuizGamesProps> = ({ onUnlockBadge, onRecordScore }) => {
+export const QuizGamesSection: React.FC<QuizGamesProps> = ({
+  onUnlockBadge,
+  onRecordScore,
+  onNavigate,
+  isLocked = false,
+}) => {
   const [activeTab, setActiveTab] = useState<'quiz' | 'germ-game'>('quiz');
 
   // QUIZ STATE
@@ -201,7 +208,40 @@ export const QuizGamesSection: React.FC<QuizGamesProps> = ({ onUnlockBadge, onRe
       {/* TAB 1: KUIS INTERAKTIF */}
       {activeTab === 'quiz' && (
         <div className="max-w-3xl mx-auto space-y-6">
-          {!quizFinished ? (
+          {isLocked ? (
+            <div className="bg-white rounded-3xl p-8 sm:p-12 border-2 border-amber-200 shadow-xl text-center space-y-6">
+              <div className="w-20 h-20 bg-amber-100 text-amber-600 rounded-3xl flex items-center justify-center text-4xl mx-auto shadow-inner">
+                🔒
+              </div>
+              <div className="space-y-2">
+                <span className="text-xs font-black uppercase tracking-wider text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                  Kuis Masih Terkunci
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-black text-slate-800">
+                  Yuk, Selesaikan Materi Dulu!
+                </h2>
+                <p className="text-sm font-semibold text-slate-600 max-w-md mx-auto leading-relaxed">
+                  Agar kamu bisa menjawab kuis dengan mudah dan mendapatkan skor sempurna, silakan pelajari materi <strong>Kenali Gigi, Cara Sikat Gigi, Makanan Sehat, dan Plak</strong> terlebih dahulu.
+                </p>
+              </div>
+
+              <div className="pt-2 flex flex-wrap justify-center gap-3">
+                <button
+                  onClick={() => onNavigate && onNavigate('kenali-gigi')}
+                  className="btn-3d-amber px-6 py-3 rounded-2xl text-white font-black text-sm flex items-center gap-2 shadow-md"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span>Pelajari Materi Sekarang 🚀</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('germ-game')}
+                  className="btn-3d-white px-5 py-3 rounded-2xl text-slate-700 font-bold text-sm"
+                >
+                  Main Game Basmi Kuman Dulu 🦠
+                </button>
+              </div>
+            </div>
+          ) : !quizFinished ? (
             <div className="bg-white rounded-3xl p-6 sm:p-10 border-2 border-sky-100 shadow-xl space-y-6">
               {/* Question Header & Score Bar */}
               <div className="flex items-center justify-between border-b pb-4">
@@ -335,13 +375,28 @@ export const QuizGamesSection: React.FC<QuizGamesProps> = ({ onUnlockBadge, onRe
                 </div>
               </div>
 
-              <div className="pt-4 flex justify-center gap-4">
+              <div className="pt-4 flex flex-wrap justify-center gap-3">
+                <button
+                  onClick={() => onNavigate && onNavigate('post-test')}
+                  className="btn-3d-amber px-6 py-3 rounded-2xl text-white font-black text-sm flex items-center gap-2 shadow-lg"
+                >
+                  <span>Lanjut ke Post-Test 🏆</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+
+                <button
+                  onClick={() => onNavigate && onNavigate('rekomendasi')}
+                  className="btn-3d-cyan px-5 py-3 rounded-2xl text-white font-black text-sm flex items-center gap-2 shadow-md"
+                >
+                  <span>Lihat Rekomendasi 💡</span>
+                </button>
+
                 <button
                   onClick={resetQuiz}
-                  className="btn-3d-white px-6 py-3 rounded-2xl text-slate-700 font-black text-sm flex items-center gap-2"
+                  className="btn-3d-white px-5 py-3 rounded-2xl text-slate-700 font-bold text-sm flex items-center gap-2"
                 >
                   <RotateCcw className="w-4 h-4" />
-                  <span>Main Kuis Lagi</span>
+                  <span>Main Lagi</span>
                 </button>
               </div>
             </div>

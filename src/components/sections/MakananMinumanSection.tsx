@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
 import { FOOD_ITEMS } from '../../data/dentalData';
-import { FoodItem } from '../../types';
+import { FoodItem, NavSection } from '../../types';
 import { ToothieMascot } from '../mascot/ToothieMascot';
-import { Sparkles, Heart, AlertTriangle, CheckCircle2, Volume2, Shield } from 'lucide-react';
+import { Sparkles, Heart, AlertTriangle, CheckCircle2, Volume2, Shield, ChevronRight } from 'lucide-react';
 import { playPop, playSuccess, playBoing, speakText } from '../../utils/soundEffects';
 
 interface MakananProps {
   onUnlockBadge?: (badgeId: string) => void;
+  onCompleteModule?: (moduleId: string) => void;
+  onNavigate?: (section: NavSection) => void;
 }
 
-export const MakananMinumanSection: React.FC<MakananProps> = ({ onUnlockBadge }) => {
+export const MakananMinumanSection: React.FC<MakananProps> = ({
+  onUnlockBadge,
+  onCompleteModule,
+  onNavigate,
+}) => {
   const [activeFilter, setActiveFilter] = useState<'semua' | 'sehat' | 'manis'>('semua');
   const [selectedFood, setSelectedFood] = useState<FoodItem>(FOOD_ITEMS[0]);
   const [toothieExpression, setToothieExpression] = useState<'happy' | 'worried' | 'sparkle'>('happy');
@@ -244,6 +250,33 @@ export const MakananMinumanSection: React.FC<MakananProps> = ({ onUnlockBadge })
             );
           })}
         </div>
+      </div>
+
+      {/* Module Completion & Next Step Card */}
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-3xl p-6 sm:p-8 border-2 border-amber-200 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+        <div className="space-y-1 text-center sm:text-left">
+          <span className="text-xs font-black text-amber-700 uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            Langkah 3: Makanan & Minuman Sehat
+          </span>
+          <h4 className="text-lg font-black text-slate-800">
+            Hebat! Kamu telah memahami makanan sehat vs camilan manis!
+          </h4>
+          <p className="text-xs font-bold text-slate-600">
+            Tandai selesai untuk membuka Materi 4: Plak & Karang Gigi.
+          </p>
+        </div>
+
+        <button
+          onClick={() => {
+            if (onCompleteModule) onCompleteModule('makanan');
+            if (onNavigate) onNavigate('plak-karang');
+          }}
+          className="btn-3d-amber px-6 py-3.5 rounded-2xl text-white font-black text-sm flex items-center gap-2 whitespace-nowrap shadow-md"
+        >
+          <span>Tandai Selesai & Lanjut Materi 4 🦠</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );

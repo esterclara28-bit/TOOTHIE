@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BRUSHING_STEPS } from '../../data/dentalData';
-import { BrushingStep } from '../../types';
+import { BrushingStep, NavSection } from '../../types';
 import { ToothieMascot } from '../mascot/ToothieMascot';
 import { ToothbrushCharacter } from '../mascot/ToothbrushCharacter';
 import { ToothpasteCharacter } from '../mascot/ToothpasteCharacter';
@@ -10,9 +10,15 @@ import confetti from 'canvas-confetti';
 
 interface CaraSikatProps {
   onUnlockBadge?: (badgeId: string) => void;
+  onCompleteModule?: (moduleId: string) => void;
+  onNavigate?: (section: NavSection) => void;
 }
 
-export const CaraSikatGigiSection: React.FC<CaraSikatProps> = ({ onUnlockBadge }) => {
+export const CaraSikatGigiSection: React.FC<CaraSikatProps> = ({
+  onUnlockBadge,
+  onCompleteModule,
+  onNavigate,
+}) => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const currentStep: BrushingStep = BRUSHING_STEPS[currentStepIndex];
 
@@ -380,6 +386,33 @@ export const CaraSikatGigiSection: React.FC<CaraSikatProps> = ({ onUnlockBadge }
             )}
           </div>
         </div>
+      </div>
+
+      {/* Module Completion & Next Step Card */}
+      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-3xl p-6 sm:p-8 border-2 border-emerald-200 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+        <div className="space-y-1 text-center sm:text-left">
+          <span className="text-xs font-black text-emerald-700 uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            Langkah 2: Cara Menyikat Gigi
+          </span>
+          <h4 className="text-lg font-black text-slate-800">
+            Hebat! Kamu telah memahami 7 langkah sikat gigi & timer 2 menit!
+          </h4>
+          <p className="text-xs font-bold text-slate-600">
+            Tandai selesai untuk membuka Materi 3: Makanan & Minuman Sehat.
+          </p>
+        </div>
+
+        <button
+          onClick={() => {
+            if (onCompleteModule) onCompleteModule('cara-sikat');
+            if (onNavigate) onNavigate('makanan');
+          }}
+          className="btn-3d-emerald px-6 py-3.5 rounded-2xl text-white font-black text-sm flex items-center gap-2 whitespace-nowrap shadow-md"
+        >
+          <span>Tandai Selesai & Lanjut Materi 3 🍎</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );

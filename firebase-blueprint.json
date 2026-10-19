@@ -1,0 +1,229 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role and learning progress tracking",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the user",
+          "maxLength": 128
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address",
+          "maxLength": 256
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name of the user",
+          "maxLength": 128
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Avatar photo URL",
+          "maxLength": 512
+        },
+        "role": {
+          "type": "string",
+          "description": "Role in the system",
+          "enum": ["super_admin", "admin", "kader", "pengguna", "viewer"]
+        },
+        "ageGroup": {
+          "type": "string",
+          "description": "Age group category",
+          "enum": ["anak_6_8", "anak_9_12", "remaja_13_17", "dewasa_ortu"]
+        },
+        "educationLevel": {
+          "type": "string",
+          "description": "Education level category",
+          "enum": ["TK_PAUD", "SD_Kelas_1_3", "SD_Kelas_4_6", "SMP_SMA", "Diploma_Sarjana"]
+        },
+        "assignedKaderId": {
+          "type": "string",
+          "description": "Optional assigned cadre UID",
+          "maxLength": 128
+        },
+        "completedModules": {
+          "type": "array",
+          "description": "List of completed module IDs"
+        },
+        "unlockedBadges": {
+          "type": "array",
+          "description": "List of unlocked badge IDs"
+        },
+        "preTestScore": {
+          "type": "number",
+          "description": "Pre-test score (0-100)"
+        },
+        "postTestScore": {
+          "type": "number",
+          "description": "Post-test score (0-100)"
+        },
+        "quizHighScore": {
+          "type": "number",
+          "description": "Quiz high score"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last updated timestamp"
+        }
+      },
+      "required": ["userId", "email", "role"]
+    },
+    "AdminDoc": {
+      "title": "AdminDoc",
+      "description": "Admin marker document for RBAC exists() lookup",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "role": {
+          "type": "string",
+          "enum": ["super_admin", "admin"]
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": ["userId", "role"]
+    },
+    "ActivityLog": {
+      "title": "ActivityLog",
+      "description": "Audit trail log of sensitive actions",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "actorId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "actorEmail": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "actorRole": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "action": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "targetId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "details": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "actorId", "action"]
+    },
+    "CommunityRecord": {
+      "title": "CommunityRecord",
+      "description": "Community health records managed by Kader / Admin",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "age": {
+          "type": "number"
+        },
+        "ageGroup": {
+          "type": "string",
+          "enum": ["anak_6_8", "anak_9_12", "remaja_13_17", "dewasa_ortu"]
+        },
+        "educationLevel": {
+          "type": "string",
+          "enum": ["TK_PAUD", "SD_Kelas_1_3", "SD_Kelas_4_6", "SMP_SMA", "Diploma_Sarjana"]
+        },
+        "parentName": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "kaderId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "kaderName": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "brushingHabit2x": {
+          "type": "boolean"
+        },
+        "hasCavity": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "preTestScore": {
+          "type": "number"
+        },
+        "postTestScore": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "name", "kaderId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "User"
+      },
+      "description": "Collection of user profiles with roles and learning records"
+    },
+    "/admins/{userId}": {
+      "schema": {
+        "$ref": "AdminDoc"
+      },
+      "description": "Collection of admin marker docs for rules validation"
+    },
+    "/activity_logs/{logId}": {
+      "schema": {
+        "$ref": "ActivityLog"
+      },
+      "description": "Audit trail log of administrative actions"
+    },
+    "/community_records/{recordId}": {
+      "schema": {
+        "$ref": "CommunityRecord"
+      },
+      "description": "Community user records assisted by Kader and Admins"
+    }
+  }
+}

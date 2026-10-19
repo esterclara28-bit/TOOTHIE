@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { POST_TEST_QUESTIONS } from '../../data/dentalData';
-import { QuizQuestion } from '../../types';
+import { QuizQuestion, NavSection } from '../../types';
 import { ToothieMascot } from '../mascot/ToothieMascot';
-import { Award, CheckCircle2, Star, Sparkles, Printer, ArrowRight, RotateCcw, Heart } from 'lucide-react';
+import { Award, CheckCircle2, Star, Sparkles, Printer, ArrowRight, RotateCcw, Heart, Lock, BookOpen } from 'lucide-react';
 import { playPop, playSuccess, playFanfare, speakText } from '../../utils/soundEffects';
 import confetti from 'canvas-confetti';
 
@@ -10,12 +10,20 @@ interface PostTestProps {
   onUnlockBadge?: (badgeId: string) => void;
   childName: string;
   onUpdateChildName: (name: string) => void;
+  onFinishPostTest?: (score: number) => void;
+  onNavigate?: (section: NavSection) => void;
+  preTestScore?: number;
+  isLocked?: boolean;
 }
 
 export const PostTestSection: React.FC<PostTestProps> = ({
   onUnlockBadge,
   childName,
   onUpdateChildName,
+  onFinishPostTest,
+  onNavigate,
+  preTestScore,
+  isLocked = false,
 }) => {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
@@ -33,7 +41,14 @@ export const PostTestSection: React.FC<PostTestProps> = ({
     if (currentIdx < POST_TEST_QUESTIONS.length - 1) {
       setCurrentIdx((prev) => prev + 1);
     } else {
-      // Finished all post test questions
+      let correct = 0;
+      POST_TEST_QUESTIONS.forEach((q, idx) => {
+        const chosen = idx === currentIdx ? optIdx : newAnswers[idx];
+        if (chosen !== undefined && q.options[chosen]?.isCorrect) {
+          correct++;
+        }
+      });
+      const calculated = Math.round((correct / POST_TEST_QUESTIONS.length) * 100);
       setIsCompleted(true);
       playFanfare();
       confetti({
@@ -44,6 +59,9 @@ export const PostTestSection: React.FC<PostTestProps> = ({
       if (onUnlockBadge) {
         onUnlockBadge('sahabat-toothie');
         onUnlockBadge('ahli-gigi-sehat');
+      }
+      if (onFinishPostTest) {
+        onFinishPostTest(calculated);
       }
       speakText('Hebat! Kamu sudah belajar banyak tentang kesehatan gigi!');
     }
@@ -96,7 +114,40 @@ export const PostTestSection: React.FC<PostTestProps> = ({
         </div>
       </div>
 
-      {!isCompleted ? (
+      {isLocked ? (
+        <div className="max-w-3xl mx-auto bg-white rounded-3xl p-8 sm:p-12 border-2 border-purple-200 shadow-xl text-center space-y-6">
+          <div className="w-20 h-20 bg-purple-100 text-purple-600 rounded-3xl flex items-center justify-center text-4xl mx-auto shadow-inner">
+            🔒
+          </div>
+          <div className="space-y-2">
+            <span className="text-xs font-black uppercase tracking-wider text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
+              Post-Test Masih Terkunci
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-800">
+              Selesaikan Modul & Kuis Dulu!
+            </h2>
+            <p className="text-sm font-semibold text-slate-600 max-w-md mx-auto leading-relaxed">
+              Post-Test ini digunakan untuk mengukur peningkatan pemahamanmu (N-Gain). Harap selesaikan seluruh modul materi dan Kuis Petualangan terlebih dahulu.
+            </p>
+          </div>
+
+          <div className="pt-2 flex flex-wrap justify-center gap-3">
+            <button
+              onClick={() => onNavigate && onNavigate('kenali-gigi')}
+              className="btn-3d-amber px-6 py-3 rounded-2xl text-white font-black text-sm flex items-center gap-2 shadow-md"
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>Buka Modul Belajar 🚀</span>
+            </button>
+            <button
+              onClick={() => onNavigate && onNavigate('quiz-games')}
+              className="btn-3d-cyan px-5 py-3 rounded-2xl text-white font-bold text-sm"
+            >
+              Buka Kuis Petualangan 🎮
+            </button>
+          </div>
+        </div>
+      ) : !isCompleted ? (
         /* Test Taking Mode */
         <div className="max-w-3xl mx-auto bg-white rounded-3xl p-6 sm:p-10 border-2 border-sky-100 shadow-xl space-y-6">
           <div className="flex items-center justify-between border-b pb-4">
@@ -242,6 +293,14 @@ export const PostTestSection: React.FC<PostTestProps> = ({
             >
               <Printer className="w-5 h-5" />
               <span>Cetak / Simpan Sertifikat (PDF)</span>
+            </button>
+
+            <button
+              onClick={() => onNavigate && onNavigate('rekomendasi')}
+              className="btn-3d-amber text-white font-black px-6 py-3 rounded-2xl flex items-center gap-2 shadow-lg"
+            >
+              <Sparkles className="w-5 h-5" />
+              <span>Lihat Rekomendasi Belajar 💡</span>
             </button>
 
             <button

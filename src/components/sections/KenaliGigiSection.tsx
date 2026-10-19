@@ -1,15 +1,23 @@
 import React, { useState } from 'react';
 import { TEETH_PARTS, TOOTH_LAYERS } from '../../data/dentalData';
-import { ToothPart, ToothLayer } from '../../types';
+import { ToothPart, ToothLayer, NavSection } from '../../types';
 import { ToothieMascot } from '../mascot/ToothieMascot';
-import { Sparkles, Info, Heart, CheckCircle2, ChevronRight, Volume2 } from 'lucide-react';
+import { Sparkles, Info, Heart, CheckCircle2, ChevronRight, Volume2, ArrowRight } from 'lucide-react';
 import { playPop, playSparkle, speakText } from '../../utils/soundEffects';
 
 interface KenaliGigiProps {
   onUnlockBadge?: (badgeId: string) => void;
+  onCompleteModule?: (moduleId: string) => void;
+  onNavigate?: (section: NavSection) => void;
+  isCompleted?: boolean;
 }
 
-export const KenaliGigiSection: React.FC<KenaliGigiProps> = ({ onUnlockBadge }) => {
+export const KenaliGigiSection: React.FC<KenaliGigiProps> = ({
+  onUnlockBadge,
+  onCompleteModule,
+  onNavigate,
+  isCompleted = false,
+}) => {
   const [selectedTooth, setSelectedTooth] = useState<ToothPart>(TEETH_PARTS[0]);
   const [selectedLayer, setSelectedLayer] = useState<ToothLayer>(TOOTH_LAYERS[0]);
   const [activeTab, setActiveTab] = useState<'jenis' | 'lapisan' | 'fungsi'>('jenis');
@@ -577,6 +585,33 @@ export const KenaliGigiSection: React.FC<KenaliGigiProps> = ({ onUnlockBadge }) 
           </div>
         </div>
       )}
+
+      {/* Module Completion & Next Step Card */}
+      <div className="bg-gradient-to-r from-sky-50 to-teal-50 rounded-3xl p-6 sm:p-8 border-2 border-sky-200 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+        <div className="space-y-1 text-center sm:text-left">
+          <span className="text-xs font-black text-sky-700 uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            Langkah 1: Kenali Gigi
+          </span>
+          <h4 className="text-lg font-black text-slate-800">
+            Hebat! Kamu telah mengenal jenis & lapisan gigi!
+          </h4>
+          <p className="text-xs font-bold text-slate-600">
+            Tandai selesai untuk membuka Materi 2: Cara Menyikat Gigi & Timer 2 Menit.
+          </p>
+        </div>
+
+        <button
+          onClick={() => {
+            if (onCompleteModule) onCompleteModule('kenali-gigi');
+            if (onNavigate) onNavigate('cara-sikat');
+          }}
+          className="btn-3d-emerald px-6 py-3.5 rounded-2xl text-white font-black text-sm flex items-center gap-2 whitespace-nowrap shadow-md"
+        >
+          <span>Tandai Selesai & Lanjut Materi 2 🪥</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 };

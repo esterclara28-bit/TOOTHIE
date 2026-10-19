@@ -6,9 +6,11 @@
 import React, { useState, useEffect } from 'react';
 import { NavSection, UserProgress } from './types';
 import { BADGES_LIST } from './data/dentalData';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/navigation/Navbar';
 import { BottomNav } from './components/navigation/BottomNav';
 import { HeroSection } from './components/sections/HeroSection';
+import { PreTestSection } from './components/sections/PreTestSection';
 import { KenaliGigiSection } from './components/sections/KenaliGigiSection';
 import { CaraSikatGigiSection } from './components/sections/CaraSikatGigiSection';
 import { MakananMinumanSection } from './components/sections/MakananMinumanSection';
@@ -16,24 +18,28 @@ import { PlakKarangSection } from './components/sections/PlakKarangSection';
 import { GigiBerlubangSection } from './components/sections/GigiBerlubangSection';
 import { QuizGamesSection } from './components/sections/QuizGamesSection';
 import { PostTestSection } from './components/sections/PostTestSection';
+import { RekomendasiSection } from './components/sections/RekomendasiSection';
+import { AdminDashboard } from './components/admin/AdminDashboard';
+import { KaderRecordsSection } from './components/kader/KaderRecordsSection';
 import { FAQSection } from './components/sections/FAQSection';
 import { Footer } from './components/layout/Footer';
 import { BadgesModal } from './components/modals/BadgesModal';
 import { AboutModal } from './components/modals/AboutModal';
-import { ToothieMascot } from './components/mascot/ToothieMascot';
 import { ArrowLeft, Sparkles, Award } from 'lucide-react';
-import { playPop, playFanfare } from './utils/soundEffects';
+import { playPop, playFanfare, playSuccess, playBoing, speakText } from './utils/soundEffects';
 import confetti from 'canvas-confetti';
 
-const STORAGE_KEY = 'toothie_child_progress_v1';
+const STORAGE_KEY = 'toothie_child_progress_v2';
 
-export default function App() {
+function AppContent() {
+  const { currentUser, userProfile, updateUserProfile, logActivity, isAdmin, isKader, isViewer } = useAuth();
+
   const [currentSection, setCurrentSection] = useState<NavSection>('beranda');
   const [badgesModalOpen, setBadgesModalOpen] = useState(false);
   const [aboutModalOpen, setAboutModalOpen] = useState(false);
   const [badgeToast, setBadgeToast] = useState<{ title: string; icon: string } | null>(null);
 
-  // Initialize progress from localStorage
+  // Initialize progress
   const [userProgress, setUserProgress] = useState<UserProgress>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -47,6 +53,8 @@ export default function App() {
       visitedSections: ['beranda'],
       quizCompleted: false,
       quizHighScore: 0,
+      preTestCompleted: false,
+      preTestScore: undefined,
       postTestCompleted: false,
       postTestScore: 0,
       brushTimerCompletedCount: 0,
@@ -56,7 +64,25 @@ export default function App() {
     };
   });
 
-  // Save progress
+  // Sync with Firebase profile if logged in
+  useEffect(() => {
+    if (userProfile) {
+      setUserProgress((prev) => ({
+        ...prev,
+        childName: userProfile.displayName || prev.childName,
+        visitedSections: Array.from(new Set([...prev.visitedSections, ...(userProfile.completedModules || [])])),
+        unlockedBadges: Array.from(new Set([...prev.unlockedBadges, ...(userProfile.unlockedBadges || [])])),
+        preTestCompleted: userProfile.preTestCompleted ?? prev.preTestCompleted,
+        preTestScore: userProfile.preTestScore ?? prev.preTestScore,
+        postTestCompleted: userProfile.postTestCompleted ?? prev.postTestCompleted,
+        postTestScore: userProfile.postTestScore ?? prev.postTestScore,
+        quizHighScore: Math.max(prev.quizHighScore, userProfile.quizHighScore || 0),
+        quizCompleted: userProfile.quizCompleted || prev.quizCompleted,
+      }));
+    }
+  }, [userProfile]);
+
+  // Save to localStorage
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(userProgress));
@@ -65,26 +91,155 @@ export default function App() {
     }
   }, [userProgress]);
 
-  const handleNavigate = (section: NavSection) => {
-    setCurrentSection(section);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Gamification prerequisites check
+  const isSectionUnlocked = (section: NavSection): boolean => {
+    if (isAdmin) return true; // Admins bypass locks
+    const completed = userProgress.visitedSections;
 
-    // Track visited section
-    if (!userProgress.visitedSections.includes(section)) {
-      setUserProgress((prev) => ({
-        ...prev,
-        visitedSections: [...prev.visitedSections, section],
-      }));
+    switch (section) {
+      case 'beranda':
+      case 'pre-test':
+      case 'rekomendasi':
+      case 'faq':
+      case 'tentang':
+        return true;
+      case 'kenali-gigi':
+        return Boolean(userProgress.preTestCompleted || completed.includes('pre-test'));
+      case 'cara-sikat':
+        return completed.includes('kenali-gigi');
+      case 'makanan':
+        return completed.includes('cara-sikat');
+      case 'plak-karang':
+        return completed.includes('makanan');
+      case 'gigi-berlubang':
+        return completed.includes('plak-karang');
+      case 'quiz-games':
+        return completed.includes('plak-karang');
+      case 'post-test':
+        return completed.includes('gigi-berlubang') && completed.includes('quiz-games');
+      case 'admin-dashboard':
+        return isAdmin || isViewer;
+      case 'kader-records':
+        return isAdmin || isKader;
+      default:
+        return true;
     }
   };
 
-  const handleUnlockBadge = (badgeId: string) => {
+  const handleNavigate = (section: NavSection) => {
+    if (!isSectionUnlocked(section)) {
+      playBoing();
+      speakText('Materi ini masih terkunci! Selesaikan materi sebelumnya terlebih dahulu ya.');
+      return;
+    }
+
+    setCurrentSection(section);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (!userProgress.visitedSections.includes(section)) {
+      setUserProgress((prev) => {
+        const updated = [...prev.visitedSections, section];
+        if (currentUser) {
+          updateUserProfile({ completedModules: updated });
+        }
+        return { ...prev, visitedSections: updated };
+      });
+    }
+  };
+
+  const handleCompleteModule = async (moduleId: string) => {
+    playSuccess();
+    confetti({ particleCount: 70, spread: 60 });
+
+    setUserProgress((prev) => {
+      const updated = Array.from(new Set([...prev.visitedSections, moduleId]));
+      if (currentUser) {
+        updateUserProfile({ completedModules: updated });
+        logActivity('COMPLETE_MODULE', `Menyelesaikan materi modul: ${moduleId}`);
+      }
+      return { ...prev, visitedSections: updated };
+    });
+  };
+
+  const handleFinishPreTest = async (score: number) => {
+    setUserProgress((prev) => {
+      const updatedSections = Array.from(new Set([...prev.visitedSections, 'pre-test', 'kenali-gigi']));
+      const newObj = {
+        ...prev,
+        preTestCompleted: true,
+        preTestScore: score,
+        visitedSections: updatedSections,
+      };
+      if (currentUser) {
+        updateUserProfile({
+          preTestScore: score,
+          preTestCompleted: true,
+          preTestDate: new Date().toISOString(),
+          completedModules: updatedSections,
+        });
+        logActivity('FINISH_PRETEST', `Menyelesaikan Pre-Test dengan nilai: ${score}`);
+      }
+      return newObj;
+    });
+  };
+
+  const handleFinishPostTest = async (score: number) => {
+    setUserProgress((prev) => {
+      const updatedSections = Array.from(new Set([...prev.visitedSections, 'post-test', 'rekomendasi']));
+      const newObj = {
+        ...prev,
+        postTestCompleted: true,
+        postTestScore: score,
+        visitedSections: updatedSections,
+      };
+      if (currentUser) {
+        updateUserProfile({
+          postTestScore: score,
+          postTestCompleted: true,
+          postTestDate: new Date().toISOString(),
+          completedModules: updatedSections,
+        });
+        logActivity('FINISH_POSTTEST', `Menyelesaikan Post-Test dengan nilai: ${score}`);
+      }
+      return newObj;
+    });
+  };
+
+  const handleRecordQuizScore = async (score: number) => {
+    setUserProgress((prev) => {
+      const newHighScore = Math.max(prev.quizHighScore, score);
+      const updatedSections = Array.from(new Set([...prev.visitedSections, 'quiz-games']));
+      const newObj = {
+        ...prev,
+        quizCompleted: true,
+        quizHighScore: newHighScore,
+        visitedSections: updatedSections,
+      };
+      if (currentUser) {
+        updateUserProfile({
+          quizHighScore: newHighScore,
+          quizCompleted: true,
+          completedModules: updatedSections,
+        });
+        logActivity('FINISH_QUIZ', `Menyelesaikan Kuis Petualangan dengan skor: ${score}`);
+      }
+      return newObj;
+    });
+  };
+
+  const handleUnlockBadge = async (badgeId: string) => {
     if (!userProgress.unlockedBadges.includes(badgeId)) {
       const badgeInfo = BADGES_LIST.find((b) => b.id === badgeId);
+      const newBadges = [...userProgress.unlockedBadges, badgeId];
+
       setUserProgress((prev) => ({
         ...prev,
-        unlockedBadges: [...prev.unlockedBadges, badgeId],
+        unlockedBadges: newBadges,
       }));
+
+      if (currentUser) {
+        updateUserProfile({ unlockedBadges: newBadges });
+      }
 
       playFanfare();
       confetti({
@@ -105,6 +260,9 @@ export default function App() {
       ...prev,
       childName: name,
     }));
+    if (currentUser) {
+      updateUserProfile({ displayName: name });
+    }
   };
 
   return (
@@ -130,6 +288,7 @@ export default function App() {
         totalBadgeCount={BADGES_LIST.length}
         onOpenBadgesModal={() => setBadgesModalOpen(true)}
         onOpenAboutModal={() => setAboutModalOpen(true)}
+        completedModules={userProgress.visitedSections}
       />
 
       {/* Main Content Area */}
@@ -163,36 +322,62 @@ export default function App() {
           />
         )}
 
+        {currentSection === 'pre-test' && (
+          <PreTestSection
+            onFinishPreTest={handleFinishPreTest}
+            onNavigate={handleNavigate}
+            initialScore={userProgress.preTestScore}
+            isAlreadyCompleted={userProgress.preTestCompleted}
+          />
+        )}
+
         {currentSection === 'kenali-gigi' && (
-          <KenaliGigiSection onUnlockBadge={handleUnlockBadge} />
+          <KenaliGigiSection
+            onUnlockBadge={handleUnlockBadge}
+            onCompleteModule={handleCompleteModule}
+            onNavigate={handleNavigate}
+            isCompleted={userProgress.visitedSections.includes('kenali-gigi')}
+          />
         )}
 
         {currentSection === 'cara-sikat' && (
-          <CaraSikatGigiSection onUnlockBadge={handleUnlockBadge} />
+          <CaraSikatGigiSection
+            onUnlockBadge={handleUnlockBadge}
+            onCompleteModule={handleCompleteModule}
+            onNavigate={handleNavigate}
+          />
         )}
 
         {currentSection === 'makanan' && (
-          <MakananMinumanSection onUnlockBadge={handleUnlockBadge} />
+          <MakananMinumanSection
+            onUnlockBadge={handleUnlockBadge}
+            onCompleteModule={handleCompleteModule}
+            onNavigate={handleNavigate}
+          />
         )}
 
         {currentSection === 'plak-karang' && (
-          <PlakKarangSection onUnlockBadge={handleUnlockBadge} />
+          <PlakKarangSection
+            onUnlockBadge={handleUnlockBadge}
+            onCompleteModule={handleCompleteModule}
+            onNavigate={handleNavigate}
+          />
         )}
 
         {currentSection === 'gigi-berlubang' && (
-          <GigiBerlubangSection onUnlockBadge={handleUnlockBadge} />
+          <GigiBerlubangSection
+            onUnlockBadge={handleUnlockBadge}
+            onCompleteModule={handleCompleteModule}
+            onNavigate={handleNavigate}
+          />
         )}
 
         {currentSection === 'quiz-games' && (
           <QuizGamesSection
             onUnlockBadge={handleUnlockBadge}
-            onRecordScore={(score) =>
-              setUserProgress((prev) => ({
-                ...prev,
-                quizCompleted: true,
-                quizHighScore: Math.max(prev.quizHighScore, score),
-              }))
-            }
+            onRecordScore={handleRecordQuizScore}
+            onNavigate={handleNavigate}
+            isLocked={!isAdmin && !userProgress.visitedSections.includes('plak-karang')}
           />
         )}
 
@@ -201,7 +386,26 @@ export default function App() {
             onUnlockBadge={handleUnlockBadge}
             childName={userProgress.childName}
             onUpdateChildName={handleUpdateChildName}
+            onFinishPostTest={handleFinishPostTest}
+            onNavigate={handleNavigate}
+            preTestScore={userProgress.preTestScore}
+            isLocked={!isAdmin && (!userProgress.visitedSections.includes('gigi-berlubang') || !userProgress.visitedSections.includes('quiz-games'))}
           />
+        )}
+
+        {currentSection === 'rekomendasi' && (
+          <RekomendasiSection
+            userProfile={userProfile}
+            onNavigate={handleNavigate}
+          />
+        )}
+
+        {currentSection === 'admin-dashboard' && (
+          <AdminDashboard />
+        )}
+
+        {currentSection === 'kader-records' && (
+          <KaderRecordsSection />
         )}
 
         {currentSection === 'faq' && <FAQSection />}
@@ -232,5 +436,13 @@ export default function App() {
         onClose={() => setAboutModalOpen(false)}
       />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }

@@ -406,6 +406,69 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
   },
 ];
 
+export const PRE_TEST_QUESTIONS: QuizQuestion[] = [
+  {
+    id: 201,
+    question: 'Berapa kali kita sebaiknya menyikat gigi dalam sehari?',
+    categoryTag: 'sikat',
+    options: [
+      { text: '1 kali saat mandi', isCorrect: false, feedback: 'Belum cukup untuk melindungi gigi.' },
+      { text: '2 kali (pagi setelah sarapan & malam sebelum tidur)', isCorrect: true, feedback: 'Bagus! Ini adalah kebiasaan terbaik.' },
+      { text: 'Hanya jika gigi kotor', isCorrect: false, feedback: 'Kurang tepat ya.' },
+    ],
+    explanation: 'Sikat gigi 2 kali sehari adalah standar emas menjaga kesehatan gigi.',
+    hint: 'Pagi dan malam!',
+  },
+  {
+    id: 202,
+    question: 'Gigi mana yang digunakan untuk memotong makanan seperti apel?',
+    categoryTag: 'anatomi',
+    options: [
+      { text: 'Gigi Seri (depan)', isCorrect: true, feedback: 'Benar, gigi seri memotong makanan.' },
+      { text: 'Gigi Geraham (belakang)', isCorrect: false, feedback: 'Geraham untuk melumatkan.' },
+      { text: 'Gigi Taring', isCorrect: false, feedback: 'Taring untuk merobek.' },
+    ],
+    explanation: 'Gigi seri depan memiliki tepi tipis tajam untuk memotong.',
+    hint: 'Gigi paling depan saat tersenyum!',
+  },
+  {
+    id: 203,
+    question: 'Makanan manakah yang paling berisiko merusak gigi jika sering dimakan?',
+    categoryTag: 'makanan',
+    options: [
+      { text: 'Permen dan cokelat manis lengket', isCorrect: true, feedback: 'Tepat, gula diubah kuman menjadi asam.' },
+      { text: 'Buah apel dan wortel', isCorrect: false, feedback: 'Buah dan wortel justru menyehatkan.' },
+      { text: 'Air putih bersih', isCorrect: false, feedback: 'Air putih adalah minuman terbaik.' },
+    ],
+    explanation: 'Gula dari camilan manis adalah bahan bakar utama kuman memproduksi asam.',
+    hint: 'Camilan manis dan kenyal.',
+  },
+  {
+    id: 204,
+    question: 'Apakah yang dimaksud dengan plak gigi?',
+    categoryTag: 'plak',
+    options: [
+      { text: 'Lapisan lengket berisi bakteri yang menempel di gigi', isCorrect: true, feedback: 'Benar! Plak adalah lapisan lengket kuman.' },
+      { text: 'Warna alami gigi yang tidak bisa hilang', isCorrect: false, feedback: 'Bukan, plak bisa dibersihkan dengan sikat gigi.' },
+      { text: 'Pasta gigi yang mengering', isCorrect: false, feedback: 'Bukan pasta gigi ya.' },
+    ],
+    explanation: 'Plak adalah lapisan lengket bakteri dan sisa makanan.',
+    hint: 'Lapisan lengket yang bisa disikat!',
+  },
+  {
+    id: 205,
+    question: 'Berapa bulan sekali kita dianjurkan periksa ke dokter gigi?',
+    categoryTag: 'karies',
+    options: [
+      { text: '6 bulan sekali', isCorrect: true, feedback: 'Hebat, 6 bulan sekali untuk deteksi dini.' },
+      { text: '5 tahun sekali', isCorrect: false, feedback: 'Terlalu lama!' },
+      { text: 'Hanya jika gigi sudah berlubang besar', isCorrect: false, feedback: 'Sebaiknya sebelum gigi berlubang!' },
+    ],
+    explanation: 'Periksa rutin setiap 6 bulan menjaga gigi tetap terawat sejak dini.',
+    hint: 'Setengah tahun sekali.',
+  },
+];
+
 export const POST_TEST_QUESTIONS: QuizQuestion[] = [
   {
     id: 101,

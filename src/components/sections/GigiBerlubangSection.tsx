@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
 import { CAVITY_STAGES } from '../../data/dentalData';
-import { CavityStage } from '../../types';
+import { CavityStage, NavSection } from '../../types';
 import { ToothieMascot } from '../mascot/ToothieMascot';
 import { Sparkles, ShieldAlert, HeartPulse, Stethoscope, CheckCircle2, ChevronRight } from 'lucide-react';
 import { playPop, playBoing, speakText } from '../../utils/soundEffects';
 
 interface GigiBerlubangProps {
   onUnlockBadge?: (badgeId: string) => void;
+  onCompleteModule?: (moduleId: string) => void;
+  onNavigate?: (section: NavSection) => void;
 }
 
-export const GigiBerlubangSection: React.FC<GigiBerlubangProps> = ({ onUnlockBadge }) => {
+export const GigiBerlubangSection: React.FC<GigiBerlubangProps> = ({
+  onUnlockBadge,
+  onCompleteModule,
+  onNavigate,
+}) => {
   const [currentIdx, setCurrentIdx] = useState(0);
   const currentStage: CavityStage = CAVITY_STAGES[currentIdx];
 
@@ -272,6 +278,33 @@ export const GigiBerlubangSection: React.FC<GigiBerlubangProps> = ({ onUnlockBad
             <span>Periksa Gigi Tiap 6 Bulan</span>
           </div>
         </div>
+      </div>
+
+      {/* Module Completion & Next Step Card */}
+      <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-3xl p-6 sm:p-8 border-2 border-rose-200 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+        <div className="space-y-1 text-center sm:text-left">
+          <span className="text-xs font-black text-rose-700 uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            Langkah 5: Gigi Berlubang (Karies)
+          </span>
+          <h4 className="text-lg font-black text-slate-800">
+            Hebat! Kamu telah menyelesaikan seluruh 5 materi edukasi gigi!
+          </h4>
+          <p className="text-xs font-bold text-slate-600">
+            Sekarang saatnya bermain di <strong>Kuis Petualangan Gigi & Game Basmi Kuman 🎮</strong>!
+          </p>
+        </div>
+
+        <button
+          onClick={() => {
+            if (onCompleteModule) onCompleteModule('gigi-berlubang');
+            if (onNavigate) onNavigate('quiz-games');
+          }}
+          className="btn-3d-amber px-6 py-3.5 rounded-2xl text-white font-black text-sm flex items-center gap-2 whitespace-nowrap shadow-md"
+        >
+          <span>Tandai Selesai & Buka Kuis Seru! 🎮</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );
